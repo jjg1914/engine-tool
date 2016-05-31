@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>engine-tools</title>
+    {{#production}}
+    <link href="index.min.css" rel="stylesheet">
+    <script src="index.min.js"></script>
+    {{/production}}
+    {{^production}}
+    <link href="index.css" rel="stylesheet">
+    <script src="index.js"></script>
+    {{/production}}
+  </head>
+  <body>
+  </body>
+</html>
