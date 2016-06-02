@@ -13,5 +13,41 @@
     {{/production}}
   </head>
   <body>
+    <main>
+      <p>
+        <canvas id="stage"></canvas>
+      </p>
+      <form>
+        <div class="input-group">
+          <label for="t_input">t</label>
+          <input type="number" id="t_input">
+        </div>
+        <div class="input-group">
+          <label for="x_input">x</label>
+          <input type="number" id="x_input">
+        </div>
+        <div class="input-group">
+          <label for="y_input">y</label>
+          <input type="number" id="y_input">
+        </div>
+        <div class="input-group">
+          <label for="dx_input">dx</label>
+          <input type="number" id="dx_input">
+        </div>
+        <div class="input-group">
+          <label for="dy_input">dy</label>
+          <input type="number" id="dy_input">
+        </div>
+        <div class="action-group">
+          <button id="new_action" type="button">New</button>
+          <button id="remove_action" type="button" disabled>Remove</button>
+        </div>
+        <div class="input-group">
+          <label for="import_input">Import</label>
+          <br/>
+          <input type="file" id="import_input">
+        </div>
+      </form>
+    </main>
   </body>
 </html>
