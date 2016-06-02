@@ -11,15 +11,14 @@ main {
   text-align: center;
 }
 
-form {
+.input-group {
   width: 208px;
-  margin: auto;
+  margin: 0.5em auto;
+  // text-align: left;
 }
 
-.input-group {
+.input-group-large {
   width: 100%;
-  margin: 0.5em 0;
-  // text-align: left;
 }
 
 .input-group label {
@@ -31,4 +30,13 @@ form {
 .input-group input {
   display: inline-block;
   width: 80%;
+}
+.input-group input[type="checkbox"] {
+  display: inline-block;
+  width: 10%;
+}
+
+.input-group input[type="checkbox"] + label {
+  width: 30%;
+  text-align: left;
 }

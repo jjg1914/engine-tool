@@ -38,14 +38,24 @@
           <label for="dy_input">dy</label>
           <input type="number" id="dy_input">
         </div>
-        <div class="action-group">
-          <button id="new_action" type="button">New</button>
-          <button id="remove_action" type="button" disabled>Remove</button>
-        </div>
         <div class="input-group">
+          <input type="checkbox" id="absolute_input" value="absolute">
+          <label for="absolute_input">Absolute</label>
+          <input type="checkbox" id="linear_input" value="linear">
+          <label for="linear_input">Linear</label>
+        </div>
+        <div class="action-group">
+          <button id="preview_action" type="button">Preview</button>
+          <button id="remove_action" type="button" disabled>Remove</button>
+          <button id="new_action" type="button">Clear</button>
+        </div>
+        <div class="input-group input-group-large">
           <label for="import_input">Import</label>
-          <br/>
           <input type="file" id="import_input">
+        </div>
+        <div class="input-group input-group-large">
+          <button id="export_action" type="button">Export</button>
+          <input type="text" id="export_input">
         </div>
       </form>
     </main>

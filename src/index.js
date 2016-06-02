@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", function() {
   var data = [];
+  var dataName = "";
 
   var dragging = false;
 
@@ -9,7 +10,9 @@ document.addEventListener("DOMContentLoaded", function() {
   var y_input = document.getElementById("y_input");
   var dx_input = document.getElementById("dx_input");
   var dy_input = document.getElementById("dy_input");
+  var export_input = document.getElementById("export_input");
   var import_input = document.getElementById("import_input");
+  var export_action = document.getElementById("export_action");
   var remove_action = document.getElementById("remove_action");
   var new_action = document.getElementById("new_action");
   var ctx = canvas.getContext("2d");
@@ -21,7 +24,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
   canvas.addEventListener("mousedown", function(event) {
     var selected = select(data, event.offsetX, event.offsetY);
-    console.log(selected);
     if (selected) {
       dragging = true;
     }
@@ -51,6 +53,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
   new_action.addEventListener("click", function() {
     data = [];
+    dataName = "";
     assignItem();
     draw(ctx, data);
   });
@@ -80,9 +83,33 @@ document.addEventListener("DOMContentLoaded", function() {
     draw(ctx, data);
   });
 
+  export_input.addEventListener("change", function(event) {
+    dataName = event.target.value;
+  });
+
   import_input.addEventListener("change", function(event) {
-    
+    var reader = new FileReader();
+    reader.onerror = function(err) { console.error(error); }
+    reader.onload = function(result) {
+      var raw = result.target.result;
+      var str = String.fromCharCode.apply(null, new Uint8Array(raw));
+      data = JSON.parse(str);
+      assignItem();
+      draw(ctx, data);
+      export_input.value = dataName = event.target.files[0].name;
+    }
+    reader.readAsArrayBuffer(event.target.files[0]);
     // draw(ctx, data);
+  });
+
+  export_action.addEventListener("click", function(event) {
+    var json = JSON.stringify(data, null, 2);
+    var blob = new Blob([ json ], { type: "application/json;charset=utf-8"});
+    
+    var a = document.createElement("a");
+    a.setAttribute("href", window.URL.createObjectURL(blob));
+    a.setAttribute("download", dataName);
+    a.click();
   });
 });
 
