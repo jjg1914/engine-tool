@@ -10,6 +10,8 @@ document.addEventListener("DOMContentLoaded", function() {
   var y_input = document.getElementById("y_input");
   var dx_input = document.getElementById("dx_input");
   var dy_input = document.getElementById("dy_input");
+  var linear_input = document.getElementById("linear_input");
+  var absolute_input = document.getElementById("absolute_input");
   var export_input = document.getElementById("export_input");
   var import_input = document.getElementById("import_input");
   var export_action = document.getElementById("export_action");
@@ -83,6 +85,17 @@ document.addEventListener("DOMContentLoaded", function() {
     draw(ctx, data);
   });
 
+  linear_input.addEventListener("change", function(event) {
+    updateItem(data, "linear", event.target.checked);
+    draw(ctx, data);
+  });
+
+  absolute_input.addEventListener("change", function(event) {
+    updateItem(data, "absolute", event.target.checked);
+    toggleAbsolute(data);
+    draw(ctx, data);
+  });
+
   export_input.addEventListener("change", function(event) {
     dataName = event.target.value;
   });
@@ -124,29 +137,70 @@ function updateItem(data, prop, value) {
 }
 
 function select(data, x, y) {
+  let prevX = 0;
+  let prevY = 0;
+
   var prev = data.find(function(e) {
     return e.selected;
   });
 
   var d = data.find(function(e) {
-    var dx = e.x - x;
-    var dy = e.y - y;
+    if (e.absolute) {
+      prevX = e.x;
+      prevY = e.y;
+    } else {
+      prevX += e.x;
+      prevY += e.y;
+    }
+
+    var dx = prevX - x;
+    var dy = prevY - y;
 
     return Math.sqrt((dx * dx) + (dy * dy)) < 8;
   });
 
-  var dtangent = data.find(function(e) {
-    var dx = e.x + e.dx - x;
-    var dy = e.y + e.dy - y;
+  prevX = 0;
+  prevY = 0;
 
-    return Math.sqrt((dx * dx) + (dy * dy)) < 8;
+  var dtangent = data.find(function(e, i, c) {
+    if (e.absolute) {
+      prevX = e.x;
+      prevY = e.y;
+    } else {
+      prevX += e.x;
+      prevY += e.y;
+    }
+
+    if (i < c.length - 1 && !c[i + 1].linear) {
+      var dx = prevX + e.dx - x;
+      var dy = prevY + e.dy - y;
+
+      return Math.sqrt((dx * dx) + (dy * dy)) < 8;
+    } else {
+      return false;
+    }
   });
 
-  var ditangent = data.find(function(e) {
-    var dx = e.x - e.dx - x;
-    var dy = e.y - e.dy - y;
+  prevX = 0;
+  prevY = 0;
 
-    return Math.sqrt((dx * dx) + (dy * dy)) < 8;
+  var ditangent = data.find(function(e, i, c) {
+    if (e.absolute) {
+      prevX = e.x;
+      prevY = e.y;
+    } else {
+      prevX += e.x;
+      prevY += e.y;
+    }
+
+    if (i > 0 && !e.linear) {
+      var dx = prevX - e.dx - x;
+      var dy = prevY - e.dy - y;
+
+      return Math.sqrt((dx * dx) + (dy * dy)) < 8;
+    } else {
+      return false;
+    }
   });
 
   if (prev != null) {
@@ -161,7 +215,23 @@ function select(data, x, y) {
     ditangent.selected = "itangent";
   } else {
     if (prev == null) {
-      d = { t: (data.length === 0 ? 0 : 1000), x: x, y: y, dx: 32, dy: 32 };
+      let [ lastX, lastY ] = data.reduce(function(m, v) {
+        if (v.absolute) {
+          return [ v.x, v.y ];
+        } else {
+          return [ m[0] + v.x, m[1] + v.y ];
+        }
+      }, [ 0, 0 ]);
+
+      d = {
+        t: (data.length === 0 ? 0 : 1000),
+        x: (data.length === 0 ? x : x - lastX ),
+        y: (data.length === 0 ? y : y - lastY ),
+        dx: 32,
+        dy: 32,
+        selected: true,
+        absolute: false,
+      };
       data.push(d);
     }
   }
@@ -170,26 +240,88 @@ function select(data, x, y) {
 }
 
 function update(data, x, y) {
+  let prevX = 0;
+  let prevY = 0;
   var d = data.find(function(e) {
-    return e.selected;
+    if (e.selected) {
+      return true;
+    } else {
+      if (e.absolute) {
+        prevX = e.x;
+        prevY = e.y;
+      } else {
+        prevX += e.x;
+        prevY += e.y;
+      }
+
+      return false;
+    }
   });
 
   if (d) {
+    let dx, dy;
+
     if (typeof d.selected == "boolean") {
-      d.x = x;
-      d.y = y;
+      if (d.absolute) {
+        dx = x;
+        dy = y;
+      } else {
+        dx = x - prevX;
+        dy = y - prevY;
+      }
+
+      d.x = dx;
+      d.y = dy;
     } else if (typeof d.selected == "string") {
+      if (d.absolute) {
+        dx = d.x;
+        dy = d.y;
+      } else {
+        dx = d.x + prevX;
+        dy = d.y + prevY;
+      }
+
       if (d.selected === "tangent") {
-        d.dx = x - d.x;
-        d.dy = y - d.y;
+        d.dx = x - dx;
+        d.dy = y - dy;
       } else if (d.selected === "itangent") {
-        d.dx = -(x - d.x);
-        d.dy = -(y - d.y);
+        d.dx = -(x - dx);
+        d.dy = -(y - dy);
       }
     }
   }
 
   return d;
+}
+
+function toggleAbsolute(data) {
+  let prevX = 0;
+  let prevY = 0;
+  var d = data.find(function(e) {
+    if (e.selected) {
+      return true;
+    } else {
+      if (e.absolute) {
+        prevX = e.x;
+        prevY = e.y;
+      } else {
+        prevX += e.x;
+        prevY += e.y;
+      }
+
+      return false;
+    }
+  });
+
+  if (d) {
+    if (d.absolute) {
+      d.x = d.x + prevX;
+      d.y = d.y + prevY;
+    } else {
+      d.x = d.x - prevX;
+      d.y = d.y - prevY;
+    }
+  }
 }
 
 function remove(data) {
@@ -212,6 +344,8 @@ function assignItem(e) {
     document.getElementById("y_input").value = e.y;
     document.getElementById("dx_input").value = e.dx;
     document.getElementById("dy_input").value = e.dy;
+    document.getElementById("linear_input").checked = e.linear;
+    document.getElementById("absolute_input").checked = e.absolute;
     document.getElementById("remove_action").disabled = false;
   } else {
     document.getElementById("t_input").value = "";
@@ -219,6 +353,8 @@ function assignItem(e) {
     document.getElementById("y_input").value = "";
     document.getElementById("dx_input").value = "";
     document.getElementById("dy_input").value = "";
+    document.getElementById("linear_input").checked = false;
+    document.getElementById("absolute_input").checked = false;
     document.getElementById("remove_action").disabled = true;
   }
 }
@@ -242,32 +378,80 @@ function draw(ctx, data) {
     ctx.stroke();
   }
 
-  let prev = null;
+  let prevX = null;
+  let prevY = null;
 
-  data.forEach(function(e) {
+  data.forEach(function(e, i, c) {
     ctx.strokeStyle = "#282828";
 
-    if (prev) {
+    if (i > 0) {
       ctx.beginPath();
-      ctx.moveTo(prev.x, prev.y);
-      ctx.lineTo(e.x, e.y);
+      ctx.moveTo(prevX, prevY);
+
+      let prev = c[i - 1]
+
+      if (e.linear) {
+        if (e.absolute) {
+          ctx.lineTo(e.x, e.y);
+          prevX = e.x;
+          prevY = e.y;
+        } else {
+          ctx.lineTo(prevX + e.x, prevY + e.y);
+          prevX += e.x;
+          prevY += e.y;
+        }
+      } else {
+        let res = 1 / 20;
+        let x1 = prevX, y1 = prevY, x2, y2;
+
+        if (e.absolute) {
+          prevX = x2 = e.x;
+          prevY = y2 = e.y;
+        } else {
+          prevX = x2 = prevX + e.x;
+          prevY = y2 = prevY + e.y;
+        }
+
+        for (let t = res; t <= 1; t += res) {
+          let h00 = (2 * t * t * t) - (3 * t * t) + 1;
+          let h10 = (t * t * t) - (2 * t * t) + t;
+          let h01 = (-2 * t * t * t) + (3 * t * t);
+          let h11 = (t * t * t) - (t * t);
+
+          let x = h00 * x1 + h10 * prev.dx
+                  + h01 * x2 + h11 * e.dx;
+          let y = h00 * y1 + h10 * prev.dy
+                  + h01 * y2 + h11 * e.dy;
+
+          ctx.lineTo(x, y);
+        }
+      }
+
+      ctx.stroke();
+    } else {
+      prevX = e.x;
+      prevY = e.y;
+    }
+
+    if (i < c.length - 1 && !c[i + 1].linear) {
+      ctx.beginPath();
+      ctx.moveTo(prevX, prevY);
+      ctx.lineTo(prevX + e.dx, prevY + e.dy);
       ctx.stroke();
     }
 
-    ctx.beginPath();
-    ctx.moveTo(e.x, e.y);
-    ctx.lineTo(e.x + e.dx, e.y + e.dy);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(e.x, e.y);
-    ctx.lineTo(e.x - e.dx, e.y - e.dy);
-    ctx.stroke();
-
-    prev = e;
+    if (i > 0 && !e.linear) {
+      ctx.beginPath();
+      ctx.moveTo(prevX, prevY);
+      ctx.lineTo(prevX - e.dx, prevY - e.dy);
+      ctx.stroke();
+    }
   });
 
-  data.forEach(function(e) {
+  prevX = 0;
+  prevY = 0;
+
+  data.forEach(function(e, i, c) {
     ctx.strokeStyle = "#282828";
     if (e.selected) {
       ctx.fillStyle = "#aeea1c";
@@ -275,24 +459,36 @@ function draw(ctx, data) {
       ctx.fillStyle = "#00b6e4";
     }
 
+    if (e.absolute) {
+      prevX = e.x;
+      prevY = e.y;
+    } else {
+      prevX += e.x;
+      prevY += e.y;
+    }
+
     ctx.beginPath();
-    ctx.moveTo(e.x + 3, e.y);
-    ctx.arc(e.x, e.y, 3, 0, 2 * Math.PI);
+    ctx.moveTo(prevX + 3, prevY);
+    ctx.arc(prevX, prevY, 3, 0, 2 * Math.PI);
     ctx.fill();
     ctx.stroke();
 
     ctx.fillStyle = "#f33c6d";
 
-    ctx.beginPath();
-    ctx.moveTo(e.x + e.dx + 3, e.y + e.dy);
-    ctx.arc(e.x + e.dx, e.y + e.dy, 3, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.stroke();
+    if (i < c.length - 1 && !c[i + 1].linear) {
+      ctx.beginPath();
+      ctx.moveTo(prevX + e.dx + 3, prevY + e.dy);
+      ctx.arc(prevX + e.dx, prevY + e.dy, 3, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
+    }
 
-    ctx.beginPath();
-    ctx.moveTo(e.x - e.dx + 3, e.y - e.dy);
-    ctx.arc(e.x - e.dx, e.y - e.dy, 3, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.stroke();
+    if (i > 0 && !e.linear) {
+      ctx.beginPath();
+      ctx.moveTo(prevX - e.dx + 3, prevY - e.dy);
+      ctx.arc(prevX - e.dx, prevY - e.dy, 3, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
+    }
   });
 }
