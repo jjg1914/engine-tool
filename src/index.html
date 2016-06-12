@@ -13,59 +13,59 @@
     {{/production}}
   </head>
 
-  <body>
+  <body ng-app="engine-tools" ng-controller="PathController as path">
     <main>
       <p>
-        <canvas id="stage"></canvas>
+        <canvas app-path value="path.value" time="path.time"></canvas>
       </p>
 
       <form>
         <div class="input-group">
-          <label for="t_input">t</label>
-          <input type="number" id="t_input">
+          <label>t</label>
+          <input type="number" ng-model="path.getSelected().t">
         </div>
 
         <div class="input-group">
-          <label for="x_input">x</label>
-          <input type="number" id="x_input">
+          <label>x</label>
+          <input type="number" ng-model="path.getSelected().x">
         </div>
 
         <div class="input-group">
-          <label for="y_input">y</label>
-          <input type="number" id="y_input">
+          <label>y</label>
+          <input type="number" ng-model="path.getSelected().y">
         </div>
 
         <div class="input-group">
-          <label for="dx_input">dx</label>
-          <input type="number" id="dx_input">
+          <label>dx</label>
+          <input type="number" ng-model="path.getSelected().dx">
         </div>
 
         <div class="input-group">
-          <label for="dy_input">dy</label>
-          <input type="number" id="dy_input">
+          <label>dy</label>
+          <input type="number" ng-model="path.getSelected().dy">
         </div>
 
         <div class="input-group">
-          <input type="checkbox" id="absolute_input">
-          <label for="absolute_input">Absolute</label>
-          <input type="checkbox" id="linear_input">
-          <label for="linear_input">Linear</label>
+          <input type="checkbox">
+          <label ng-click="path.doToggleAbsolute()">Absolute</label>
+          <input type="checkbox" ng-model=path.getSelected().linear>
+          <label>Linear</label>
         </div>
 
         <div class="action-group">
-          <button id="preview_action" type="button">Preview</button>
-          <button id="remove_action" type="button" disabled>Remove</button>
-          <button id="new_action" type="button">Clear</button>
+          <button type="button" ng-click="path.doPreview()">Preview</button>
+          <button type="button" ng-click="path.doRemove()">Remove</button>
+          <button type="button" ng-click="path.doClear()">Clear</button>
         </div>
 
         <div class="input-group input-group-large">
-          <label for="import_input">Import</label>
-          <input type="file" id="import_input">
+          <label>Import</label>
+          <input type="file" ng-model="path.file" ng-change="path.doImport()" app-file>
         </div>
 
         <div class="input-group input-group-large">
-          <button id="export_action" type="button">Export</button>
-          <input type="text" id="export_input">
+          <button type="button" ng-click="path.doExport()">Export</button>
+          <input type="text" ng-model="path.fileName">
         </div>
       </form>
     </main>

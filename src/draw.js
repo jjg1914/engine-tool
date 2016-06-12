@@ -34,16 +34,16 @@ exports.tangents = function(ctx, data) {
   interpolate.coordinates(data).forEach(function(e, i, c) {
     ctx.beginPath();
 
-    if (i === 0) {
-      ctx.moveTo(e.x, e.y);
-    } else {
+    if (i > 0 && !e.target.linear) {
       ctx.moveTo(e.x - e.target.dx, e.y - e.target.dy);
+    } else {
+      ctx.moveTo(e.x, e.y);
     }
 
-    if (i === c.length - 1) {
-      ctx.lineTo(e.x, e.y);
-    } else {
+    if (i < c.length - 1 && !c[i + 1].target.linear) {
       ctx.lineTo(e.x + e.target.dx, e.y + e.target.dy);
+    } else {
+      ctx.lineTo(e.x, e.y);
     }
 
     ctx.stroke();

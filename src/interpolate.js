@@ -3,7 +3,7 @@ module.exports = function(data) {
     if (i === 0) {
       return m.concat([ [ v.x, v.y ] ]);
     } else {
-      if (v.linear) {
+      if (v.target.linear) {
         return m.concat([ [ v.x, v.y ] ]);
       } else {
         let res = 1 / 20;
