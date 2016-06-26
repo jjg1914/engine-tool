@@ -46,8 +46,8 @@
         </div>
 
         <div class="input-group">
-          <input type="checkbox">
-          <label ng-click="path.doToggleAbsolute()">Absolute</label>
+          <input type="checkbox" ng-model="path.getSelected().absolute" ng-change="path.doToggleAbsolute()">
+          <label>Absolute</label>
           <input type="checkbox" ng-model=path.getSelected().linear>
           <label>Linear</label>
         </div>

@@ -71,7 +71,7 @@ module.exports.prototype.doImport = function() {
     let str = String.fromCharCode.apply(null, new Uint8Array(raw));
 
     self.value = JSON.parse(str);
-    self.fileName = this.file.name;
+    self.fileName = self.file.name;
   };
   reader.readAsArrayBuffer(this.file);
 };
